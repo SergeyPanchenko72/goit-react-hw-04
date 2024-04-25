@@ -6,11 +6,12 @@ import SearchBar from "../SearchBar/SearchBar";
 import Loader from "../Loader/Loader";
 import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
 import ImageModal from "../ImageModal/ImageModal";
+import toast, { Toaster } from "react-hot-toast";
 
 function App() {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [requestError, setRequestError] = useState(false);
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -18,6 +19,11 @@ function App() {
 
   const handleSearch = (newQuery) => {
     setQuery(newQuery);
+    if (newQuery === "") {
+      toast.error(
+        "Sorry, the search data is empty. Please enter your request again!"
+      );
+    }
     setPage(1);
     setImages([]);
   };
@@ -30,14 +36,14 @@ function App() {
     }
     async function getImages() {
       try {
-        setError(false);
+        setRequestError(false);
         setLoading(true);
         const data = await fetchImages(query, page);
         setImages((prevImages) => {
           return [...prevImages, ...data];
         });
       } catch (error) {
-        setError(true);
+        setRequestError(true);
       } finally {
         setLoading(false);
       }
@@ -55,7 +61,7 @@ function App() {
   return (
     <div className={css.container}>
       <SearchBar onSearch={handleSearch} />
-      {error && <b>Oops! There was an error! Please reload!r</b>}
+      {requestError && <b>Oops! There was an error! Please reload!</b>}
       {images.length > 0 && (
         <ImageGallery items={images} openModal={openModal} />
       )}
@@ -70,6 +76,7 @@ function App() {
           closeModal={closeModal}
         />
       )}
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }
